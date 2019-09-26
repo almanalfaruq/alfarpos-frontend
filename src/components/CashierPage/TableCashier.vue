@@ -2,11 +2,72 @@
   <v-data-table
     :headers="headers"
     :items="products"
-    sort-by="item_code"
+    sort-by="index"
     :items-per-page="-1"
     class="table-item"
     hide-default-footer
   >
+    <template v-slot:item.index="props">
+      {{ products.indexOf(props.item) + 1 }}
+    </template>
+    <template v-slot:item.item_code="props">
+      <v-autocomplete
+        v-if="products.indexOf(props.item) === products.length - 1"
+        v-model="props.item.item_code"
+        :items="itemsForSearch"
+        :search-input.sync="searchCode"
+        color="white"
+        hide-no-data
+        item-text="item_code"
+        item-value="item_code"
+        single-line
+        placeholder="Kode Barang"
+        autofocus
+        @change="addItem($event, products.indexOf(props.item))"
+      ></v-autocomplete>
+      <template v-else>
+        {{ props.item.item_code }}
+      </template>
+    </template>
+    <template v-slot:item.product_name="props">
+      <v-edit-dialog
+        :return-value.sync="props.item.product_name"
+        @save="saveProductName(props.item)"
+      >
+        {{ props.item.product_name }}
+        <template v-slot:input>
+          <!-- <v-text-field v-model="props.item.product_name" label="Edit" single-line></v-text-field> -->
+          <v-autocomplete
+            v-model="props.item.product_name"
+            :items="itemsForSearch"
+            :search-input.sync="search"
+            color="white"
+            hide-no-data
+            item-text="product_name"
+            item-value="product_name"
+            single-line
+            placeholder="Nama Produk"
+            autofocus
+          ></v-autocomplete>
+        </template>
+      </v-edit-dialog>
+    </template>
+    <template v-slot:item.amount="props">
+      <v-edit-dialog :return-value.sync="props.item.amount" @save="saveAmount(props.item)">
+        <div>{{ props.item.amount }}</div>
+        <template v-slot:input>
+          <div class="mt-4 title">Update Iron</div>
+        </template>
+        <template v-slot:input>
+          <v-text-field
+            v-model="props.item.amount"
+            label="Edit"
+            single-line
+            autofocus
+          ></v-text-field>
+        </template>
+      </v-edit-dialog>
+    </template>
     <template v-slot:item.action="{ item }">
       <v-icon small @click="deleteItem(item)">fa-trash</v-icon>
     </template>
@@ -17,7 +78,15 @@ export default {
   name: 'TableCashier',
   data() {
     return {
+      searchCode: null,
+      search: null,
       headers: [
+        {
+          text: 'No',
+          align: 'left',
+          sortable: false,
+          value: 'index',
+        },
         {
           text: 'Kode Barang',
           align: 'left',
@@ -33,14 +102,13 @@ export default {
       pagination: {
         itemsPerPage: -1,
       },
-      products: [
+      itemsForSearch: [
         {
           item_code: '001',
           product_name: 'Panadol',
           price: 6000,
           amount: 1,
           total: 6000,
-          action: '1%',
         },
         {
           item_code: '002',
@@ -48,7 +116,6 @@ export default {
           price: 13500,
           amount: 1,
           total: 13500,
-          action: '1%',
         },
         {
           item_code: '003',
@@ -56,7 +123,6 @@ export default {
           price: 16700,
           amount: 1,
           total: 13500,
-          action: '7%',
         },
         {
           item_code: '004',
@@ -64,7 +130,6 @@ export default {
           price: 5600,
           amount: 1,
           total: 5600,
-          action: '8%',
         },
         {
           item_code: '005',
@@ -72,7 +137,6 @@ export default {
           price: 14400,
           amount: 1,
           total: 14400,
-          action: '16%',
         },
         {
           item_code: '006',
@@ -80,7 +144,6 @@ export default {
           price: 6300,
           amount: 1,
           total: 6300,
-          action: '0%',
         },
         {
           item_code: '007',
@@ -88,7 +151,6 @@ export default {
           price: 9800,
           amount: 1,
           total: 9800,
-          action: '2%',
         },
         {
           item_code: '008',
@@ -96,7 +158,6 @@ export default {
           price: 16000,
           amount: 1,
           total: 16000,
-          action: '45%',
         },
         {
           item_code: '009',
@@ -104,7 +165,6 @@ export default {
           price: 9000,
           amount: 1,
           total: 9000,
-          action: '22%',
         },
         {
           item_code: '010',
@@ -112,15 +172,22 @@ export default {
           price: 8000,
           amount: 1,
           total: 8000,
-          action: '6%',
         },
+      ],
+      products: [
         {
-          item_code: '011',
+          item_code: '010',
           product_name: 'Bawang Merah 500gr',
           price: 8000,
           amount: 1,
           total: 8000,
-          action: '6%',
+        },
+        {
+          item_code: null,
+          product_name: null,
+          price: null,
+          amount: null,
+          total: null,
         },
       ],
     };
@@ -146,6 +213,53 @@ export default {
       const isConfirmed = window.confirm('Are you sure you want to delete this item?');
       isConfirmed && this.products.splice(index, 1);
       /* eslint-enable */
+    },
+    addItem(event, index) {
+      const product = this.itemsForSearch.find(item => item.item_code === event);
+      this.$set(this.products, index, product);
+      this.products.push({
+        item_code: null,
+        product_name: null,
+        price: null,
+        amount: null,
+        total: null,
+      });
+      this.search = null;
+    },
+    saveProductName(item) {
+      const index = this.products.indexOf(item);
+      this.$set(this.products, index, {
+        item_code: index,
+        product_name: this.products[index].product_name,
+        price: 9000,
+        amount: 1,
+        total: 9000,
+      });
+      this.search = null;
+      // this.$set(this, 'search', null);
+      // this.$nextTick(() => {
+      //   this.$set(this, 'search', null);
+      // });
+    },
+    saveAmount(item) {
+      const index = this.products.indexOf(item);
+      this.$set(this.products, index, {
+        item_code: index,
+        product_name: this.products[index].product_name,
+        price: this.products[index].price,
+        amount: this.products[index].amount,
+        total: this.products[index].price * this.products[index].amount,
+      });
+    },
+    clearAllProduct() {
+      this.products = [];
+      this.products.push({
+        item_code: null,
+        product_name: null,
+        price: null,
+        amount: null,
+        total: null,
+      });
     },
   },
 };

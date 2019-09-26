@@ -1,11 +1,11 @@
 <template>
   <div class="background">
     <header-nav />
-    <table-cashier @update-total="updateTotal" />
+    <table-cashier @update-total="updateTotal" ref="tableCashier" />
     <div class="bottom-bar">
       <div class="text-total">
         <p class="text-sm-left">Total</p>
-        <h1 class="text-xl-left">Rp {{ total }}</h1>
+        <h1 class="text-xl-left">{{ totalPrice }}</h1>
       </div>
       <div class="text-right btn-buy">
         <v-btn color="teal darken-1" @click.stop="dialog = true">Bayar</v-btn>
@@ -23,23 +23,24 @@
               solo
               flat
               outlined
-              :rules="[rules.number]"
+              :rules="[rules.number, rules.isSufficent]"
+              type="number"
+              @keydown.enter="openDialogChange"
             ></v-text-field>
           </v-col>
           <v-card-actions>
             <div class="flex-grow-1"></div>
 
-            <v-btn color="green darken-1" text @click="indexDialog++" :disabled="isANumber"
+            <v-btn color="green darken-1" text @click="openDialogChange" :disabled="isANumber"
               >Bayar</v-btn
             >
           </v-card-actions>
         </template>
         <template v-else>
           <v-card-title class="headline text-center">Kembalian</v-card-title>
-          <h2 class="text-center">Rp 50.000</h2>
+          <h2 class="text-center">{{ cashChange }}</h2>
           <v-card-actions>
             <div class="flex-grow-1"></div>
-
             <v-btn color="green darken-1" text @click="dialog = false">Tutup</v-btn>
           </v-card-actions>
         </template>
@@ -66,12 +67,18 @@ export default {
       amountPaid: '',
       rules: {
         number: value => !Number.isNaN(Number(value)) || 'Harus berupa angka',
+        isSufficent: value => value >= this.total || 'Uang belum cukup',
       },
     };
   },
   watch: {
     dialog(value) {
-      if (!value) this.indexDialog = 0;
+      if (!value) {
+        this.indexDialog = 0;
+        this.total = 0;
+        this.amountPaid = '';
+        this.clearAllProduct();
+      }
     },
   },
   computed: {
@@ -79,10 +86,26 @@ export default {
       if (this.amountPaid === '') return true;
       return Number.isNaN(Number(this.amountPaid));
     },
+    cashChange() {
+      const change = this.amountPaid - this.total;
+      return this.formatPrice(change);
+    },
+    totalPrice() {
+      return this.formatPrice(this.total);
+    },
   },
   methods: {
+    openDialogChange() {
+      if (!this.isANumber) this.indexDialog += 1;
+    },
     updateTotal(total) {
       this.total = total;
+    },
+    formatPrice(number) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(number);
+    },
+    clearAllProduct() {
+      this.$refs.tableCashier.clearAllProduct();
     },
   },
 };
