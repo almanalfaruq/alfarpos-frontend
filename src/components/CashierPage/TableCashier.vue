@@ -176,13 +176,6 @@ export default {
       ],
       products: [
         {
-          item_code: '010',
-          product_name: 'Bawang Merah 500gr',
-          price: 8000,
-          amount: 1,
-          total: 8000,
-        },
-        {
           item_code: null,
           product_name: null,
           price: null,
@@ -236,10 +229,6 @@ export default {
         total: 9000,
       });
       this.search = null;
-      // this.$set(this, 'search', null);
-      // this.$nextTick(() => {
-      //   this.$set(this, 'search', null);
-      // });
     },
     saveAmount(item) {
       const index = this.products.indexOf(item);
