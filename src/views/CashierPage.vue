@@ -1,6 +1,13 @@
 <template>
   <div class="background">
     <header-nav />
+    <div class="header">
+      <v-col cols="12" sm="6" md="2" class="field-custumer">
+        <v-text-field label="Nama Pelanggan" outlined></v-text-field>
+      </v-col>
+      <p class="date-cashier">{{ date }}</p>
+    </div>
+
     <table-cashier @update-total="updateTotal" ref="tableCashier" />
     <div class="bottom-bar">
       <div class="text-total">
@@ -53,6 +60,8 @@
 import HeaderNav from '@/components/CashierPage/HeaderNav.vue';
 import TableCashier from '@/components/CashierPage/TableCashier.vue';
 
+const moment = require('moment');
+
 export default {
   name: 'CashierPage',
   components: {
@@ -93,6 +102,9 @@ export default {
     totalPrice() {
       return this.formatPrice(this.total);
     },
+    date() {
+      return moment().format('MMMM Do YYYY, h:mm:ss a');
+    },
   },
   methods: {
     openDialogChange() {
@@ -117,6 +129,24 @@ export default {
   background-image: url('~@/assets/cashier-background.png');
   background-color: #fff;
 }
+
+.header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  .date-cashier {
+    margin-right: 40px;
+    font-family: 'Muli', sans-serif !important;
+  }
+  .field-custumer {
+    margin-left: 25px;
+    margin-top: 10px;
+    font-family: 'Muli', sans-serif !important;
+  }
+}
+
 .bottom-bar {
   position: absolute;
   bottom: 20px;
@@ -142,5 +172,12 @@ export default {
 
 .background::v-deep .v-btn {
   color: #fff;
+}
+.method {
+  color: grey;
+}
+
+.filter {
+  color: green;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="login-form">
     <h4 class="title">Masuk ke Akunmu</h4>
-    <v-text-field v-model="email" label="Email" class="input-text" />
+    <v-text-field v-model="username" label="Email" class="input-text" />
     <v-text-field
       v-model="password"
       :append-icon="showPassword ? 'fa-eye' : 'fa-eye-slash'"
@@ -14,16 +14,20 @@
       @click:append="showPassword = !showPassword"
       class="input-text"
     />
-    <v-btn color="teal darken-1" min-width="350" dark>Masuk</v-btn>
+    <v-btn color="teal darken-1" min-width="350" dark @click="login">Masuk</v-btn>
   </div>
 </template>
 
 <script>
+import Config from '@/config';
+
+const axios = require('axios');
+
 export default {
   name: 'LoginForm',
   data() {
     return {
-      email: '',
+      username: '',
       password: '',
       showPassword: false,
       rules: {
@@ -31,6 +35,23 @@ export default {
         min: v => v.length >= 6 || 'Min 6 characters',
       },
     };
+  },
+  methods: {
+    login() {
+      axios
+        .post(Config.apiUrl.concat('/api/users/login'), {
+          username: this.username,
+          password: this.password,
+        })
+        .then(response => {
+          const { data } = response;
+          localStorage.setItem('token', data.data);
+          window.location = 'http://localhost:8080/cashier';
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
   },
 };
 </script>

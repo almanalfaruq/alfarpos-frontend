@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar color="teal darken-1" class="header-cashier">
+    <v-toolbar flat class="header-cashier" color="#3C7E8C">
       <div class="flex-grow-1"></div>
       <v-toolbar-title class="text-cashier">
         <h4>Toko Alfar</h4>
@@ -36,7 +36,7 @@ export default {
       user: 'Fiha Febiala',
       address:
         'Alamat : Depan pasar, Desa RT.7/RW.1, Dusun I, Ketaon, Kec.Banyudono, Kabupaten Boyolali, Jawa Tengah 57373',
-      items: [{ title: 'Dashboard Keuangan' }, { title: 'Keluar' }],
+      items: [{ title: 'Halaman Kasir' }, { title: 'Keluar' }],
     };
   },
 };
@@ -45,6 +45,7 @@ export default {
 <style lang="scss" scoped>
 .header-cashier {
   text-align: center;
+  border-bottom: 1px solid #ffffff;
 }
 .text-cashier {
   h4 {
