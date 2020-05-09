@@ -31,9 +31,7 @@
           <v-card-actions>
             <div class="flex-grow-1"></div>
 
-            <v-btn color="green darken-1" text @click="openDialogChange" :disabled="isANumber"
-              >Bayar</v-btn
-            >
+            <v-btn color="green darken-1" text @click="openDialogChange" :disabled="isANumber">Bayar</v-btn>
           </v-card-actions>
         </template>
         <template v-else>
@@ -65,6 +63,7 @@ export default {
       dialog: false,
       indexDialog: 0,
       amountPaid: '',
+      focusedIndex: -1,
       rules: {
         number: value => !Number.isNaN(Number(value)) || 'Harus berupa angka',
         isSufficent: value => value >= this.total || 'Uang belum cukup',
@@ -106,6 +105,9 @@ export default {
     },
     clearAllProduct() {
       this.$refs.tableCashier.clearAllProduct();
+    },
+    clearFocuesIndex() {
+      this.focusedIndex = -1;
     },
   },
 };
