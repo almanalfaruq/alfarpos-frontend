@@ -139,7 +139,7 @@ export default {
         { text: 'Harga', sortable: false, align: 'center', value: 'price' },
         { text: 'Jumlah', sortable: false, align: 'center', value: 'amount' },
         { text: 'Total', sortable: false, align: 'center', value: 'total' },
-        { text: 'Hapus', sortable: false, align: 'center', value: 'action' },
+        { text: 'Hapus', sortable: false, align: 'center', value: 'action', width: '80px' },
       ],
       pagination: {
         itemsPerPage: -1,

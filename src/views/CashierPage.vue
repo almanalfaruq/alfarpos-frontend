@@ -157,6 +157,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  max-width: 100%;
 }
 .bottom-bar {
   position: absolute;

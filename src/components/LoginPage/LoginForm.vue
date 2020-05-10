@@ -1,7 +1,7 @@
 <template>
   <div class="login-form">
     <h4 class="title">Masuk ke Akunmu</h4>
-    <v-text-field v-model="email" label="Email" class="input-text" />
+    <v-text-field v-model="username" label="Username" class="input-text" />
     <v-text-field
       v-model="password"
       :append-icon="showPassword ? 'fa-eye' : 'fa-eye-slash'"
@@ -14,16 +14,18 @@
       @click:append="showPassword = !showPassword"
       class="input-text"
     />
-    <v-btn color="teal darken-1" min-width="350" dark @click="setSessionStorage">Masuk</v-btn>
+    <v-btn color="teal darken-1" min-width="350" dark @click="login">Masuk</v-btn>
   </div>
 </template>
 
 <script>
+import config from '@/config';
+
 export default {
   name: 'LoginForm',
   data() {
     return {
-      email: '',
+      username: '',
       password: '',
       showPassword: false,
       rules: {
@@ -33,8 +35,23 @@ export default {
     };
   },
   methods: {
-    setSessionStorage() {
-      sessionStorage.setItem('token', 'abcdefghi');
+    login() {
+      const url = config.apiURL.concat('/users/login');
+      this.$http
+        .post(url, {
+          username: this.username,
+          password: this.password,
+        })
+        .then(resp => {
+          const { data } = resp;
+          if (data.code === 200) {
+            sessionStorage.setItem('token', data.data);
+            this.$router.push('/cashier');
+          }
+        })
+        .catch(() => {
+          console.log('Server error');
+        });
     },
   },
 };
