@@ -1,14 +1,22 @@
 <template>
   <div class="background">
     <header-nav />
-    <table-cashier @update-total="updateTotal" ref="tableCashier" />
+    <v-container class="order-detail">
+      <h4 class="font-weight-bold">{{ now }}</h4>
+    </v-container>
+    <table-cashier
+      @update-total="updateTotal"
+      @open-finish-dialog="openDialog"
+      @update-is-focus-on-input="updateIsFocusOnInput"
+      ref="tableCashier"
+    />
     <div class="bottom-bar">
       <div class="text-total">
         <p class="text-sm-left">Total</p>
         <h1 class="text-xl-left">{{ totalPrice }}</h1>
       </div>
       <div class="text-right btn-buy">
-        <v-btn color="teal darken-1" @click.stop="dialog = true">Bayar</v-btn>
+        <v-btn color="teal darken-1" :disabled="total === 0" @click.stop="openDialog">Bayar</v-btn>
       </div>
     </div>
     <v-dialog v-model="dialog" persistent max-width="290">
@@ -20,12 +28,14 @@
               label="Solo"
               placeholder="Rp 50.000"
               v-model="amountPaid"
+              autofocus
               solo
               flat
               outlined
               :rules="[rules.number, rules.isSufficent]"
               type="number"
               @keydown.enter="openDialogChange"
+              @keydown.esc.prevent="dialog = false"
             ></v-text-field>
           </v-col>
           <v-card-actions>
@@ -51,6 +61,8 @@
 import HeaderNav from '@/components/CashierPage/HeaderNav.vue';
 import TableCashier from '@/components/CashierPage/TableCashier.vue';
 
+const moment = require('moment');
+
 export default {
   name: 'CashierPage',
   components: {
@@ -63,7 +75,7 @@ export default {
       dialog: false,
       indexDialog: 0,
       amountPaid: '',
-      focusedIndex: -1,
+      isFocusOnInput: true,
       rules: {
         number: value => !Number.isNaN(Number(value)) || 'Harus berupa angka',
         isSufficent: value => value >= this.total || 'Uang belum cukup',
@@ -72,11 +84,13 @@ export default {
   },
   watch: {
     dialog(value) {
-      if (!value) {
+      if (!value && this.indexDialog !== 0) {
         this.indexDialog = 0;
         this.total = 0;
         this.amountPaid = '';
         this.clearAllProduct();
+      } else if (!value && this.indexDialog === 0) {
+        this.focusInputTable();
       }
     },
   },
@@ -92,8 +106,18 @@ export default {
     totalPrice() {
       return this.formatPrice(this.total);
     },
+    now() {
+      return moment()
+        .locale('id')
+        .format('dddd, Do MMMM YYYY');
+    },
   },
   methods: {
+    openDialog() {
+      if (this.total === 0) return;
+      this.dialog = true;
+      this.isFocusOnInput = false;
+    },
     openDialogChange() {
       if (!this.isANumber) this.indexDialog += 1;
     },
@@ -106,8 +130,14 @@ export default {
     clearAllProduct() {
       this.$refs.tableCashier.clearAllProduct();
     },
-    clearFocuesIndex() {
-      this.focusedIndex = -1;
+    updateIsFocusOnInput(isFocus) {
+      this.isFocusOnInput = isFocus;
+    },
+    focusInputTable() {
+      if (this.isFocusOnInput) return;
+      this.$nextTick(() => {
+        this.$refs.tableCashier.focusInput();
+      });
     },
   },
 };
@@ -118,6 +148,15 @@ export default {
   height: 100vh;
   background-image: url('~@/assets/cashier-background.png');
   background-color: #fff;
+  background-size: cover;
+}
+.order-detail {
+  padding: 20px 35px;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .bottom-bar {
   position: absolute;
