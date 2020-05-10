@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Axios from 'axios';
+import global from '@/mixins/global';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -13,6 +14,8 @@ Vue.config.keyCodes.f7 = 118;
 Vue.config.keyCodes.f8 = 119;
 Vue.prototype.$http = Axios;
 Vue.prototype.$_ = require('lodash');
+
+Vue.mixin(global);
 
 new Vue({
   router,

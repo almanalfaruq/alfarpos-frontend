@@ -14,7 +14,7 @@
       @click:append="showPassword = !showPassword"
       class="input-text"
     />
-    <v-btn color="teal darken-1" min-width="350" dark>Masuk</v-btn>
+    <v-btn color="teal darken-1" min-width="350" dark @click="setSessionStorage">Masuk</v-btn>
   </div>
 </template>
 
@@ -31,6 +31,11 @@ export default {
         min: v => v.length >= 6 || 'Min 6 characters',
       },
     };
+  },
+  methods: {
+    setSessionStorage() {
+      sessionStorage.setItem('token', 'abcdefghi');
+    },
   },
 };
 </script>
