@@ -26,6 +26,8 @@
             v-if="products.indexOf(props.item) === products.length - 1 && !isSearchActivated"
             v-model="productCode"
             autofocus
+            :error="isInputError"
+            :error-messages="inputError"
             placeholder="Kode Barcode"
             @keydown.enter="addProductByCode(props.index)"
             @keydown.f2.prevent="activateSearchByCode"
@@ -44,9 +46,12 @@
               item-text="itemCode"
               item-value="itemCode"
               single-line
-              placeholder="Kode Barang"
+              placeholder="Cari Kode Barang"
               :loading="isSearchLoading"
+              :error="isInputError"
+              :error-messages="inputError"
               autofocus
+              @click="addProductBySearch($event, 'code', props.index)"
               @change="addProductBySearch($event, 'code', props.index)"
               @keydown.esc.prevent="turnOffSearch"
               @keydown.f2.prevent="activateSearchByCode"
@@ -61,9 +66,12 @@
               item-text="productName"
               item-value="productName"
               single-line
-              placeholder="Nama Barang"
+              placeholder="Cari Nama Barang"
               :loading="isSearchLoading"
+              :error="isInputError"
+              :error-messages="inputError"
               autofocus
+              @click="addProductBySearch($event, 'name', props.index)"
               @change="addProductBySearch($event, 'name', props.index)"
               @keydown.esc.prevent="turnOffSearch"
               @keydown.f2.prevent="activateSearchByCode"
@@ -113,6 +121,8 @@ export default {
       isSearchByCode: false,
       isSearchLoading: false,
       search: null,
+      isInputError: false,
+      inputError: null,
       focusedIndex: -1,
       productCode: '',
       headers: [
@@ -165,7 +175,13 @@ export default {
     },
   },
   watch: {
+    productCode() {
+      this.isInputError = false;
+      this.inputError = null;
+    },
     search(val) {
+      this.isInputError = false;
+      this.inputError = null;
       if (val !== '' || val !== null) {
         this.isSearchLoading = true;
         this.debounceSearch();
@@ -216,16 +232,22 @@ export default {
               amount,
               total: amount * data.data.sell_price,
             };
-            this.addProduct(index, product);
+            this.addProduct(index, product, amount);
           } else {
-            alert('Produk tidak ditemukan');
+            this.isInputError = true;
+            this.inputError = `Produk ${productCode} tidak ditemukan`;
           }
         })
-        .catch(() => {
-          alert('Server error');
+        .catch(err => {
+          const { data } = err.response;
+          this.isInputError = true;
+          if (data.code === 404) {
+            this.inputError = `Produk ${productCode} tidak ditemukan`;
+          } else {
+            this.inputError = 'Server error';
+          }
         });
     },
-    // TODO: Tidy this function
     addProductBySearch(event, type, index) {
       let product;
       switch (type) {
@@ -239,11 +261,11 @@ export default {
           break;
       }
 
-      this.addProduct(index, product);
+      this.addProduct(index, product, 1);
     },
-    addExistingProduct(index, itemCode) {
+    addExistingProduct(index, itemCode, amount) {
       const product = this.products.find(item => item.itemCode === itemCode);
-      this.$set(this.products[index], 'amount', product.amount + 1);
+      this.$set(this.products[index], 'amount', product.amount + amount);
       this.$set(this.products[index], 'total', product.price * product.amount);
       this.$set(this.products, this.products.length - 1, {
         itemCode: null,
@@ -252,9 +274,7 @@ export default {
         amount: null,
         total: null,
       });
-      this.productCode = '';
-      this.search = null;
-      this.turnOffSearch();
+      this.clearAllInput();
     },
     addNewProduct(index, product) {
       this.$set(this.products, index, product);
@@ -265,21 +285,25 @@ export default {
         amount: null,
         total: null,
       });
-      this.productCode = '';
-      this.search = null;
-      this.turnOffSearch();
+      this.clearAllInput();
     },
-    addProduct(index, product) {
+    addProduct(index, product, amount) {
       // If product is exist, then add the quantity
       const indexExistingProduct = this.products.findIndex(
         item => item.itemCode === product.itemCode,
       );
       if (indexExistingProduct >= 0) {
-        this.addExistingProduct(indexExistingProduct, product.itemCode);
+        this.addExistingProduct(indexExistingProduct, product.itemCode, amount);
         return;
       }
 
       this.addNewProduct(index, product);
+    },
+    clearAllInput() {
+      this.productCode = '';
+      this.search = null;
+      this.itemsForSearch = [];
+      this.turnOffSearch();
     },
     saveAmount(item) {
       const index = this.products.indexOf(item);
@@ -292,6 +316,9 @@ export default {
       });
     },
     clearAllProduct() {
+      this.productCode = '';
+      this.search = null;
+      this.itemsForSearch = [];
       this.products = [];
       this.products.push({
         itemCode: null,
@@ -304,6 +331,8 @@ export default {
     searchProduct() {
       if (this.search === null || this.search === '') {
         this.isSearchLoading = false;
+        this.isInputError = false;
+        this.inputError = null;
         return;
       }
       let url = config.apiURL.concat('/products');
@@ -315,19 +344,32 @@ export default {
       this.$http
         .get(url)
         .then(resp => {
-          this.itemsForSearch = resp.data.data.map(data => {
-            return {
-              itemCode: data.code,
-              productName: data.name,
-              price: data.sell_price,
-              amount: 1,
-              total: data.sell_price,
-            };
-          });
+          const { data } = resp;
           this.isSearchLoading = false;
+          if (data.code === 200) {
+            this.itemsForSearch = data.data.map(item => {
+              return {
+                itemCode: item.code,
+                productName: item.name,
+                price: item.sell_price,
+                amount: 1,
+                total: item.sell_price,
+              };
+            });
+          } else {
+            this.isInputError = true;
+            this.inputError = `Produk ${this.search} tidak ditemukan`;
+          }
         })
-        .catch(() => {
+        .catch(err => {
+          const { data } = err.response;
           this.isSearchLoading = false;
+          this.isInputError = true;
+          if (data.code === 404) {
+            this.inputError = `Produk ${this.search} tidak ditemukan`;
+          } else {
+            this.inputError = 'Server error';
+          }
         });
     },
     focusRow() {
