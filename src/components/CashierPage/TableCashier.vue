@@ -17,7 +17,7 @@
         @keydown.down.prevent="moveDown"
         @keydown.esc.prevent="focusInput"
         @keydown.f8.prevent="openEditAmountDialog"
-        @keydown.delete="deleteItem(props.item)"
+        @keydown.delete="deleteItem($event, props.item)"
         @keydown.+.prevent="openFinishDialog"
       >
         <td class="text-left">{{ props.index + 1 }}</td>
@@ -102,7 +102,7 @@
           <v-icon
             v-if="props.index != products.length - 1"
             small
-            @click="deleteItem(props.item)"
+            @click="deleteItem($event, props.item)"
           >fa-trash</v-icon>
         </td>
       </tr>
@@ -197,11 +197,20 @@ export default {
       deep: true,
       immediate: true,
     },
+    total() {
+      this.$nextTick(() => {
+        this.focusInput();
+      });
+    },
   },
   methods: {
-    deleteItem(item) {
+    deleteItem(event, item) {
       /* eslint-disable */
-      if (this.focusedIndex === this.products.length - 1 || this.search !== null) return;
+      if (
+        (event instanceof KeyboardEvent && this.focusedIndex === this.products.length - 1) ||
+        this.search !== null
+      )
+        return;
       const index = this.products.indexOf(item);
       const isConfirmed = window.confirm('Apakah anda yakin untuk menghapus produk ini?');
       isConfirmed && this.products.splice(index, 1);
@@ -289,9 +298,9 @@ export default {
     },
     addProduct(index, product, amount) {
       // If product is exist, then add the quantity
-      const indexExistingProduct = this.products.findIndex(
-        item => item.itemCode === product.itemCode,
-      );
+      const indexExistingProduct = this.products
+        .slice(0, this.products.length - 1)
+        .findIndex(item => item.itemCode === product.itemCode);
       if (indexExistingProduct >= 0) {
         this.addExistingProduct(indexExistingProduct, product.itemCode, amount);
         return;
@@ -402,6 +411,7 @@ export default {
       this.focusedIndex = this.products.length - 1;
     },
     openEditAmountDialog() {
+      if (this.focusedIndex === this.products.length - 1) return;
       document.getElementById(`edit-dialog-${this.focusedIndex}`).previousElementSibling.click();
     },
     openFinishDialog() {
