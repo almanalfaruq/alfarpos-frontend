@@ -90,9 +90,6 @@
           >
             <div>{{ props.item.amount }}</div>
             <template v-slot:input>
-              <div class="mt-4 title">Update Iron</div>
-            </template>
-            <template v-slot:input>
               <v-text-field v-model="props.item.amount" label="Edit" single-line autofocus></v-text-field>
             </template>
           </v-edit-dialog>
@@ -356,15 +353,15 @@ export default {
           const { data } = resp;
           this.isSearchLoading = false;
           if (data.code === 200) {
-            this.itemsForSearch = data.data.map(item => {
-              return {
+            this.itemsForSearch = data.data.map(item => (
+              {
                 itemCode: item.code,
                 productName: item.name,
                 price: item.sell_price,
                 amount: 1,
                 total: item.sell_price,
-              };
-            });
+              }
+            ));
           } else {
             this.isInputError = true;
             this.inputError = `Produk ${this.search} tidak ditemukan`;
