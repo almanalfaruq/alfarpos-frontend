@@ -12,6 +12,7 @@
     "@vue/cli": "^4.5.11",
     "axios": "^0.21.1",
     "core-js": "^3.8.3",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
     "v-hotkey": "^0.8.0",

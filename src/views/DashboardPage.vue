@@ -3,7 +3,7 @@
     <header-dashboard />
     <div class="sidebar-content">
       <side-bar />
-      <home-dashboard />
+      <router-view></router-view>
     </div>
   </div>
 </template>
@@ -11,14 +11,12 @@
 <script>
 import HeaderDashboard from '@/components/DashboardPage/HeaderDashboard.vue';
 import SideBar from '@/components/DashboardPage/SideBar.vue';
-import HomeDashboard from '@/components/DashboardPage/HomeDashboard.vue';
 
 export default {
   name: 'DashboardPage',
   components: {
     HeaderDashboard,
     SideBar,
-    HomeDashboard,
   },
 };
 </script>

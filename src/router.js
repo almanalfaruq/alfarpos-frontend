@@ -3,6 +3,8 @@ import Router from 'vue-router';
 import CashierPage from './views/CashierPage.vue';
 import LoginPage from './views/LoginPage.vue';
 import DashboardPage from './views/DashboardPage.vue';
+import HomeDashboard from './components/DashboardPage/HomeDashboard.vue';
+import ProductDashboard from './components/DashboardPage/ProductDashboard.vue';
 
 Vue.use(Router);
 
@@ -30,6 +32,19 @@ const router = new Router({
       path: '/dashboard',
       name: 'DashboardPage',
       component: DashboardPage,
+      meta: {
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: '',
+          component: HomeDashboard,
+        },
+        {
+          path: 'product',
+          component: ProductDashboard,
+        },
+      ]
     },
   ],
 });

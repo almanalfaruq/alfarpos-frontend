@@ -1,3 +1,3 @@
 module.exports = {
-  apiURL: 'https://alfarpos-backend.herokuapp.com/api',
+  apiURL: 'http://localhost:8000/api',
 };
