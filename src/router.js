@@ -18,7 +18,7 @@ const router = new Router({
       component: LoginPage,
       meta: {
         requiresAuth: false,
-      }
+      },
     },
     {
       path: '/cashier',
@@ -30,7 +30,6 @@ const router = new Router({
     },
     {
       path: '/dashboard',
-      name: 'DashboardPage',
       component: DashboardPage,
       meta: {
         requiresAuth: true,
@@ -38,13 +37,15 @@ const router = new Router({
       children: [
         {
           path: '',
+          name: 'HomeDashboard',
           component: HomeDashboard,
         },
         {
           path: 'product',
+          name: 'ProductDashboard',
           component: ProductDashboard,
         },
-      ]
+      ],
     },
   ],
 });
@@ -54,19 +55,22 @@ router.beforeEach((to, from, next) => {
     if (sessionStorage.getItem('token') === null) {
       next({
         path: '/',
-        params: { nextUrl: to.fullPath }
-      })
+        params: { nextUrl: to.fullPath },
+      });
     } else {
-      next()
+      next();
     }
-  } else if (to.matched.some(route => route.name === 'LoginPage') && sessionStorage.getItem('token') !== null) {
+  } else if (
+    to.matched.some(route => route.name === 'LoginPage') &&
+    sessionStorage.getItem('token') !== null
+  ) {
     next({
       path: '/cashier',
-      params: { nextUrl: to.fullPath }
-    })
+      params: { nextUrl: to.fullPath },
+    });
   } else {
     next();
   }
-})
+});
 
 export default router;

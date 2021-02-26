@@ -134,14 +134,15 @@ export default {
       this.loading = true;
       let url = config.apiURL.concat(`/products`);
       if (this.search !== null && this.search !== '') {
-        url = url.concat(`?query=${this.search}`);
+        url = url.concat(`?query=${this.search}&limit=10&page=1`);
       }
       this.$http
         .get(url)
         .then(resp => {
           const { data } = resp;
           if (data.code === 200) {
-            this.products = data.data.map(item => this.getProductFromResponse(item));
+            const { products } = data.data;
+            this.products = products.map(item => this.getProductFromResponse(item));
           }
           this.loading = false;
         })

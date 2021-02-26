@@ -15,4 +15,7 @@ export default {
 
 <style>
 @import url('https://fonts.googleapis.com/css?family=Muli&display=swap');
+.swal2-container {
+  font-family: '-webkit-pictograph';
+}
 </style>

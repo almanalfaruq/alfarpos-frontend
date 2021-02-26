@@ -19,7 +19,7 @@ export default {
           name: resp.category.name,
         },
         unit: {
-          id: 2,
+          id: resp.unit.id,
           createdAt: resp.unit.created_at,
           updatedAt: resp.unit.updated_at,
           deletedAt: resp.unit.deleted_at,
@@ -36,12 +36,17 @@ export default {
           updatedAt: data.updated_at,
           deletedAt: data.deleted_at,
           productID: data.product_id,
-          priceOption: data.price_per_packet.Int64 === 0 ? 2 : 1,
+          priceOption: data.price_per_packet.Int64 !== 0 ? 1 : 0,
+          sellPrice:
+            data.price_per_packet.Int64 !== 0
+              ? data.price_per_packet.Int64
+              : data.price_per_unit.Int64,
           quantityMultiplier: data.quantity_multiplier,
           pricePerPacket: data.price_per_packet.Int64,
           pricePerUnit: data.price_per_unit.Int64,
         })),
-        isOpenPrice: resp.product.is_open_price,
+        unitAndPrice: `${resp.unit.name} | Rp${resp.sell_price.Int64}`,
+        isOpenPrice: resp.is_open_price,
       };
     },
   },

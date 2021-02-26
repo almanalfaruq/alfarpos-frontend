@@ -132,18 +132,18 @@
       <v-row style="margin: 5px -12px 15px; max-width: 100%; overflow-x: auto; overflow-y: hidden">
         <v-col
           v-for="(relatedProduct, index) in relatedProducts"
-          :key="index"
+          :key="relatedProduct.id"
           md="3"
           align-self="center"
           justify="center"
         >
           <v-card
-            v-if="relatedProduct.id === null"
+            v-if="relatedProduct.id === -1"
             height="150px"
             style="display: flex; align-items: center; justify-content: center"
             color="#EEEEEE"
             outlined
-            @click="test"
+            @click="openDialogRelatedProduct(-1, null)"
           >
             <div class="d-flex flex-column justify-space-around align-center" style="height: 85%">
               <v-btn fab color="#E0E0E0" disabled>
@@ -155,18 +155,36 @@
           <v-card
             v-else
             height="150px"
-            style="display: flex; align-items: center; justify-content: center"
             outlined
-            @click="test"
+            @click="openDialogRelatedProduct(index, relatedProduct)"
           >
+            <v-card-title
+              style="height: 25px; padding: 0; margin: 0"
+              class="title font-weight-regular justify-space-between"
+            >
+              <v-spacer></v-spacer>
+              <v-btn icon @click.stop="deleteRelatedProduct(relatedProduct)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-card-title>
             <div class="d-flex flex-column justify-space-around align-center" style="height: 85%">
-              <span>{{ relatedProduct.name }}</span>
-              <span>{{ relatedProduct.unit.name }}</span>
+              <span class="related-product-text">{{ relatedProduct.name }}</span>
+              <span class="related-product-text">{{ relatedProduct.unit.name }}</span>
             </div>
           </v-card>
         </v-col>
       </v-row>
     </v-container>
+    <v-dialog v-model="dialog" max-width="500">
+      <dialog-related-product
+        @close-dialog="closeDialogRelatedProduct"
+        @add-related-product="addRelatedProduct"
+        @edit-related-product="editRelatedProduct"
+        :isEdit="isEditRelatedProduct"
+        :product="selectedRelatedProduct"
+        :editIndex="selectedRelatedIndex"
+      ></dialog-related-product>
+    </v-dialog>
 
     <v-divider></v-divider>
 
@@ -180,9 +198,14 @@
 
 <script>
 import config from '@/config';
+import ProductMixin from '@/mixins/product';
+
+import DialogRelatedProduct from './DialogRelatedProduct.vue';
 
 export default {
   name: 'DialogProduct',
+  mixins: [ProductMixin],
+  components: { DialogRelatedProduct },
   props: {
     isEdit: {
       type: Boolean,
@@ -195,6 +218,10 @@ export default {
   },
   data() {
     return {
+      dialog: false,
+      isEditRelatedProduct: false,
+      selectedRelatedProduct: null,
+      selectedRelatedIndex: -1,
       categories: [],
       units: [],
       specialPriceOptions: [
@@ -223,9 +250,10 @@ export default {
           quantityMultiplier: null,
         },
       ],
+      relatedProductIDs: [],
       relatedProducts: [
         {
-          id: null,
+          id: -1,
           name: null,
           unit: {
             id: null,
@@ -247,7 +275,9 @@ export default {
   },
   watch: {
     selectedUnit(val) {
-      this.unitName = val.name;
+      if (val !== null) {
+        this.unitName = val.name;
+      }
     },
     product: {
       handler() {
@@ -258,7 +288,13 @@ export default {
     },
   },
   methods: {
+    closeDialogRelatedProduct() {
+      this.dialog = false;
+      this.isEditRelatedProduct = false;
+      this.selectedRelatedProduct = null;
+    },
     closeDialog() {
+      this.clearAllInput();
       this.$emit('close-dialog');
     },
     parseEditData() {
@@ -266,17 +302,7 @@ export default {
         this.clearAllInput();
         return;
       }
-      this.code = this.product.code;
-      this.name = this.product.name;
-      this.selectedCategory = this.product.category;
-      this.selectedUnit = this.product.unit;
-      this.unitName = this.product.unit.name;
-      this.stock = this.product.quantity;
-      this.buyPrice = this.product.buyPrice;
-      this.sellPrice = this.product.sellPrice;
-      if (this.product.productPrices.length > 0) {
-        this.specialPrices = this.product.productPrices;
-      }
+      this.getExistingData();
     },
     clearAllInput() {
       this.code = null;
@@ -295,9 +321,10 @@ export default {
           quantityMultiplier: null,
         },
       ];
+      this.relatedProductIDs = [];
       this.relatedProducts = [
         {
-          id: null,
+          id: -1,
           name: null,
           unit: {
             id: null,
@@ -305,6 +332,41 @@ export default {
           },
         },
       ];
+    },
+    getExistingData() {
+      this.code = this.$_.cloneDeep(this.product.code);
+      this.name = this.$_.cloneDeep(this.product.name);
+      this.selectedCategory = this.$_.cloneDeep(this.product.category);
+      this.selectedUnit = this.$_.cloneDeep(this.product.unit);
+      this.unitName = this.$_.cloneDeep(this.product.unit.name);
+      this.stock = this.$_.cloneDeep(this.product.quantity);
+      this.buyPrice = this.$_.cloneDeep(this.product.buyPrice);
+      this.sellPrice = this.$_.cloneDeep(this.product.sellPrice);
+      this.relatedProductIDs = this.$_.cloneDeep(this.product.relatedProductIDs);
+      if (this.product.productPrices.length > 0) {
+        this.specialPrices = this.$_.cloneDeep(this.product.productPrices);
+      }
+      if (this.relatedProductIDs !== null && this.relatedProductIDs.length > 0) {
+        const url = config.apiURL.concat(`/products/ids/`).concat(this.relatedProductIDs.join(','));
+        this.$http
+          .get(url)
+          .then(resp => {
+            const { data } = resp;
+            if (data.code === 200) {
+              this.relatedProducts = data.data.map(item => this.getProductFromResponse(item));
+              this.addEmptyRelatedProduct();
+            }
+          })
+          .catch(err => {
+            console.log(err);
+            const { data } = err.response;
+            if (data.code === 404) {
+              console.log(`Produk tidak ditemukan`);
+            } else {
+              console.log('Server error');
+            }
+          });
+      }
     },
     getCategories() {
       const url = config.apiURL.concat(`/categories`);
@@ -323,7 +385,7 @@ export default {
         .catch(err => {
           const { data } = err.response;
           if (data.code === 404) {
-            console.log(`Produk ${this.search} tidak ditemukan`);
+            console.log(`Produk tidak ditemukan`);
           } else {
             console.log('Server error');
           }
@@ -363,6 +425,16 @@ export default {
         quantityMultiplier: null,
       });
     },
+    addEmptyRelatedProduct() {
+      this.relatedProducts.push({
+        id: -1,
+        name: null,
+        unit: {
+          id: null,
+          name: null,
+        },
+      });
+    },
     deleteSpecialPrice(item) {
       const index = this.specialPrices.indexOf(item);
       this.specialPrices.splice(index, 1);
@@ -378,6 +450,50 @@ export default {
       }
       return isAllNull;
     },
+    openDialogRelatedProduct(index, product) {
+      this.selectedRelatedIndex = index;
+      this.selectedRelatedProduct = product;
+      if (this.selectedRelatedProduct !== null) {
+        this.isEditRelatedProduct = true;
+      }
+      this.dialog = true;
+    },
+    addRelatedProduct(product) {
+      const index = this.relatedProducts.length - 1;
+      this.$set(this.relatedProducts, index, product);
+      this.relatedProducts.push({
+        id: -1,
+        name: null,
+        unit: {
+          id: null,
+          name: null,
+        },
+      });
+      this.relatedProductIDs.push(product.id);
+    },
+    editRelatedProduct(index, product) {
+      this.$set(this.relatedProducts, index, product);
+      this.$set(this.relatedProductIDs, index, product.id);
+    },
+    deleteRelatedProduct(product) {
+      this.$swal({
+        title: 'Anda yakin menghapus produk berkaitan ini?',
+        text: `Hapus ${product.name} dari produk berkaitan`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus saja!',
+        cancelButtonText: 'Batal',
+      }).then(result => {
+        if (result.isConfirmed) {
+          let index = this.relatedProducts.indexOf(product);
+          this.relatedProducts.splice(index, 1);
+          index = this.relatedProductIDs.indexOf(product.id);
+          this.relatedProductIDs.splice(index, 1);
+        }
+      });
+    },
     test() {
       console.log('test');
     },
@@ -389,6 +505,9 @@ export default {
 .subtitle {
   display: inline-block;
   margin-top: 20px;
+}
+.related-product-text {
+  text-align: center;
 }
 .container {
   max-width: 90%;
