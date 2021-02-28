@@ -7,19 +7,19 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    token: localStorage.getItem('token')
+    token: sessionStorage.getItem('token'),
   },
   getters: {
     token: state => state.token,
     userLoggedIn: state => {
       if (state.token === null) return null;
       return jwt.decode(state.token);
-    }
+    },
   },
   mutations: {
-
+    setToken(state, token) {
+      state.token = token;
+    },
   },
-  actions: {
-
-  },
+  actions: {},
 });

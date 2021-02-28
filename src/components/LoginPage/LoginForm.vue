@@ -70,8 +70,9 @@ export default {
         .then(resp => {
           const { data } = resp;
           if (data.code === 200) {
-            sessionStorage.setItem('token', data.data);
-            this.$router.push('/cashier');
+            sessionStorage.setItem('token', data.data.token);
+            this.$store.commit('setToken', data.data.token);
+            this.$router.push('/dashboard');
           }
         })
         .catch(err => {

@@ -2,7 +2,7 @@
   <div class="wording-dasboard">
     <div class="header">
       <div class="body-text">
-        <h1 class="text-sm-left">Hai Fiha,</h1>
+        <h1 class="text-sm-left">Hai {{ user.full_name }},</h1>
         <h4 class="text-sm-left">Yuk, Lihat laporan keuangan tokomu hari ini</h4>
       </div>
       <div class="body-image">
@@ -11,6 +11,17 @@
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'HomeDashboard',
+  computed: {
+    user() {
+      return this.$store.getters.userLoggedIn.user;
+    },
+  },
+};
+</script>
 
 
 <style lang="scss" scoped>

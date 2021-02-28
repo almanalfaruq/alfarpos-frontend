@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import store from './store';
 import CashierPage from './views/CashierPage.vue';
 import LoginPage from './views/LoginPage.vue';
 import DashboardPage from './views/DashboardPage.vue';
@@ -18,6 +19,12 @@ const router = new Router({
       component: LoginPage,
       meta: {
         requiresAuth: false,
+      },
+    },
+    {
+      path: '/logout',
+      meta: {
+        requiresAuth: true,
       },
     },
     {
@@ -52,7 +59,13 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(route => route.meta.requiresAuth)) {
-    if (sessionStorage.getItem('token') === null) {
+    if (to.matched.some(route => route.path === '/logout')) {
+      sessionStorage.removeItem('token');
+      store.commit('setToken', null);
+      router.push({
+        path: '/',
+      });
+    } else if (sessionStorage.getItem('token') === null) {
       next({
         path: '/',
         params: { nextUrl: to.fullPath },
@@ -65,7 +78,7 @@ router.beforeEach((to, from, next) => {
     sessionStorage.getItem('token') !== null
   ) {
     next({
-      path: '/cashier',
+      path: '/dashboard',
       params: { nextUrl: to.fullPath },
     });
   } else {

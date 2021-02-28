@@ -2,7 +2,13 @@
   <v-card flat class="side-menu">
     <v-navigation-drawer permanent expand-on-hover color="#3C7E8C">
       <v-list nav dense>
-        <v-list-item v-for="item in items" :key="item.title" link class="menu-icon">
+        <v-list-item
+          v-for="item in items"
+          :key="item.title"
+          @click="gotoRoute(item.route)"
+          link
+          class="menu-icon"
+        >
           <v-list-item-icon>
             <v-icon color="white">{{ item.icon }}</v-icon>
           </v-list-item-icon>
@@ -22,14 +28,20 @@ export default {
     return {
       drawer: true,
       items: [
-        { title: 'Dashboard', icon: 'mdi-home-city' },
+        { title: 'Dashboard', icon: 'mdi-home-city', route: '/dashboard' },
         { title: 'Laporan', icon: 'fa-book' },
-        { title: 'Produk', icon: 'fa-truck-moving' },
+        { title: 'Produk', icon: 'fa-truck-moving', route: '/dashboard/product' },
         { title: 'Stok', icon: 'fa-warehouse' },
         { title: 'Admin Panel', icon: 'fa-users-cog' },
       ],
       mini: true,
     };
+  },
+  methods: {
+    gotoRoute(route) {
+      if (route === null || route === '') return;
+      this.$router.push(route);
+    },
   },
 };
 </script>

@@ -191,7 +191,8 @@
     <v-card-actions>
       <v-btn text @click="closeDialog"> Batal </v-btn>
       <v-spacer></v-spacer>
-      <v-btn color="primary"> Simpan </v-btn>
+      <v-btn v-if="isEdit" color="primary" @click="saveProduct"> Simpan </v-btn>
+      <v-btn v-else color="primary" @click="addProduct"> Tambah Produk </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -234,6 +235,7 @@ export default {
           value: 2,
         },
       ],
+      id: null,
       code: null,
       name: null,
       selectedCategory: null,
@@ -305,6 +307,7 @@ export default {
       this.getExistingData();
     },
     clearAllInput() {
+      this.id = null;
       this.code = null;
       this.name = null;
       this.selectedCategory = null;
@@ -334,17 +337,20 @@ export default {
       ];
     },
     getExistingData() {
-      this.code = this.$_.cloneDeep(this.product.code);
-      this.name = this.$_.cloneDeep(this.product.name);
-      this.selectedCategory = this.$_.cloneDeep(this.product.category);
-      this.selectedUnit = this.$_.cloneDeep(this.product.unit);
-      this.unitName = this.$_.cloneDeep(this.product.unit.name);
-      this.stock = this.$_.cloneDeep(this.product.quantity);
-      this.buyPrice = this.$_.cloneDeep(this.product.buyPrice);
-      this.sellPrice = this.$_.cloneDeep(this.product.sellPrice);
-      this.relatedProductIDs = this.$_.cloneDeep(this.product.relatedProductIDs);
+      const product = this.$_.cloneDeep(this.product);
+      this.id = product.id;
+      this.code = product.code;
+      this.name = product.name;
+      this.selectedCategory = product.category;
+      this.selectedUnit = product.unit;
+      this.unitName = product.unit.name;
+      this.stock = product.quantity;
+      this.buyPrice = product.buyPrice;
+      this.sellPrice = product.sellPrice;
+      this.relatedProductIDs = product.relatedProductIDs;
+      this.isOpenPrice = product.isOpenPrice;
       if (this.product.productPrices.length > 0) {
-        this.specialPrices = this.$_.cloneDeep(this.product.productPrices);
+        this.specialPrices = product.productPrices;
       }
       if (this.relatedProductIDs !== null && this.relatedProductIDs.length > 0) {
         const url = config.apiURL.concat(`/products/ids/`).concat(this.relatedProductIDs.join(','));
@@ -493,6 +499,59 @@ export default {
           this.relatedProductIDs.splice(index, 1);
         }
       });
+    },
+    addProduct() {
+      const cloneData = this.$_.cloneDeep(this.$data);
+      const parsedProduct = this.parseToProductJSONRequest(cloneData);
+      const url = config.apiURL.concat(`/products`);
+      const axiosConfig = {
+        headers: { Authorization: `Bearer ${this.$store.getters.token}` },
+      };
+      const req = this.$http.post(url, parsedProduct, axiosConfig);
+      req
+        .then(resp => {
+          const { data } = resp;
+          console.log(data);
+          if (data.code === 201) {
+            this.$swal('Produk berhasil dibuat!', 'Oke!', 'success');
+            this.closeDialog();
+          }
+        })
+        .catch(err => {
+          console.log(err.response);
+          const { data } = err.response;
+          this.$swal({
+            icon: 'error',
+            title: 'Oops...',
+            text: data.message,
+          });
+        });
+    },
+    saveProduct() {
+      const cloneData = this.$_.cloneDeep(this.$data);
+      const parsedProduct = this.parseToProductJSONRequest(cloneData);
+      const url = config.apiURL.concat(`/products`);
+      const axiosConfig = {
+        headers: { Authorization: `Bearer ${this.$store.getters.token}` },
+      };
+      const req = this.$http.put(url.concat(`/${parsedProduct.id}`), parsedProduct, axiosConfig);
+      req
+        .then(resp => {
+          const { data } = resp;
+          console.log(data);
+          if (data.code === 200) {
+            this.$swal('Produk berhasil diubah!', 'Oke!', 'success');
+          }
+        })
+        .catch(err => {
+          console.log(err.response);
+          const { data } = err.response;
+          this.$swal({
+            icon: 'error',
+            title: 'Oops...',
+            text: data.message,
+          });
+        });
     },
     test() {
       console.log('test');

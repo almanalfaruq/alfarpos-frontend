@@ -18,12 +18,12 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-item v-for="(item, index) in items" :key="index">
+          <v-list-item v-for="item in items" @click="gotoRoute(item.route)" :key="item.title">
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
-      <span class="name-user">Fiha Febiala</span>
+      <span class="name-user">{{ user.full_name }}</span>
     </v-toolbar>
   </div>
 </template>
@@ -33,11 +33,21 @@ export default {
   name: 'HeaderNav',
   data() {
     return {
-      user: 'Fiha Febiala',
       address:
         'Alamat : Depan pasar, Desa RT.7/RW.1, Dusun I, Ketaon, Kec.Banyudono, Kabupaten Boyolali, Jawa Tengah 57373',
-      items: [{ title: 'Halaman Kasir' }, { title: 'Keluar' }],
+      items: [{ title: 'Keluar', route: '/logout' }],
     };
+  },
+  computed: {
+    user() {
+      return this.$store.getters.userLoggedIn.user;
+    },
+  },
+  methods: {
+    gotoRoute(route) {
+      if (route === null || route === '') return;
+      this.$router.push(route);
+    },
   },
 };
 </script>
