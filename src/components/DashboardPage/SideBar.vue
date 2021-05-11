@@ -3,7 +3,7 @@
     <v-navigation-drawer permanent expand-on-hover color="#3C7E8C">
       <v-list nav dense>
         <v-list-item
-          v-for="item in items"
+          v-for="item in itemsWithRoute"
           :key="item.title"
           @click="gotoRoute(item.route)"
           link
@@ -28,14 +28,22 @@ export default {
     return {
       drawer: true,
       items: [
-        { title: 'Dashboard', icon: 'mdi-home-city', route: '/dashboard' },
-        { title: 'Laporan', icon: 'fa-book' },
+        { title: 'Dashboard', icon: 'mdi-home-city', route: '/dashboard', mustAdmin: true },
+        { title: 'Laporan', icon: 'fa-book', mustAdmin: true },
         { title: 'Produk', icon: 'fa-truck-moving', route: '/dashboard/product' },
         { title: 'Stok', icon: 'fa-warehouse' },
-        { title: 'Admin Panel', icon: 'fa-users-cog' },
+        { title: 'Admin Panel', icon: 'fa-users-cog', mustAdmin: true },
       ],
       mini: true,
     };
+  },
+  computed: {
+    itemsWithRoute() {
+      if (this.$store.getters.userLoggedIn.user.role_id === 1) {
+        return this.items.filter(i => i.route);
+      }
+      return this.items.filter(i => i.route && !i.mustAdmin);
+    },
   },
   methods: {
     gotoRoute(route) {

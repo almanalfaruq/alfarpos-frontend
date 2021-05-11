@@ -3,17 +3,17 @@
     <v-toolbar flat class="header-cashier" color="#3C7E8C">
       <div class="flex-grow-1"></div>
       <v-toolbar-title class="text-cashier">
-        <h4>Toko Alfar</h4>
-        <p>{{ address }}</p>
+        <h4>{{ name }}</h4>
+        <p class="address">{{ address }}</p>
       </v-toolbar-title>
 
       <div class="flex-grow-1"></div>
 
       <v-menu offset-y>
-        <template v-if="$vuetify.breakpoint.smAndUp" v-slot:activator="{ on }">
+        <template v-slot:activator="{ on }">
           <v-btn icon>
             <v-avatar v-on="on" class="avatar-icon">
-              <img src="~@/assets/avatar.png" alt="Fiha" />
+              <img src="~@/assets/avatar.png" alt="avatar" />
             </v-avatar>
           </v-btn>
         </template>
@@ -33,6 +33,7 @@ export default {
   name: 'HeaderNav',
   data() {
     return {
+      name: 'Toko Alfar',
       address:
         'Alamat : Depan pasar, Desa RT.7/RW.1, Dusun I, Ketaon, Kec.Banyudono, Kabupaten Boyolali, Jawa Tengah 57373',
       items: [{ title: 'Keluar', route: '/logout' }],
@@ -77,5 +78,14 @@ export default {
 }
 .avatar-icon {
   margin-left: -15px;
+}
+
+@media screen and (max-width: 800px) {
+  .name-user {
+    display: none;
+  }
+  .address {
+    display: none;
+  }
 }
 </style>

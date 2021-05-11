@@ -46,6 +46,9 @@ const router = new Router({
           path: '',
           name: 'HomeDashboard',
           component: HomeDashboard,
+          meta: {
+            adminOnly: true,
+          },
         },
         {
           path: 'product',
@@ -58,6 +61,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
+  // nav guard for auth page
   if (to.matched.some(route => route.meta.requiresAuth)) {
     if (to.matched.some(route => route.path === '/logout')) {
       sessionStorage.removeItem('token');
@@ -70,6 +74,14 @@ router.beforeEach((to, from, next) => {
         path: '/',
         params: { nextUrl: to.fullPath },
       });
+    } else if (
+      to.matched.some(route => route.meta.adminOnly) &&
+      store.getters.userLoggedIn.user.role_id !== 1
+    ) {
+      next({
+        path: '/dashboard/product',
+        params: { nextUrl: to.fullPath },
+      });
     } else {
       next();
     }
@@ -77,6 +89,7 @@ router.beforeEach((to, from, next) => {
     to.matched.some(route => route.name === 'LoginPage') &&
     sessionStorage.getItem('token') !== null
   ) {
+    // nav guard for user accessing login page but user already logged in
     next({
       path: '/dashboard',
       params: { nextUrl: to.fullPath },
