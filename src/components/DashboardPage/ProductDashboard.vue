@@ -35,6 +35,7 @@
           fixed-header
           :loading="loading"
           loading-text="Memuat data... Mohon menunggu"
+          hide-default-footer
         >
           <template v-slot:item="props">
             <tr>
@@ -61,6 +62,16 @@
             :product="selectedProduct"
           ></dialog-product>
         </v-dialog>
+        <v-container>
+          <v-row justify="center">
+            <v-btn outlined :disabled="!hasPrev" @click="page -= 1">
+              <v-icon> mdi-menu-left </v-icon>
+            </v-btn>
+            <v-btn outlined :disabled="!hasNext" @click="page += 1">
+              <v-icon> mdi-menu-right </v-icon>
+            </v-btn>
+          </v-row>
+        </v-container>
         <v-btn class="mx-2 floating" fab dark small color="#3C7E8C" @click.stop="dialog = true">
           <v-icon dark> mdi-plus </v-icon>
         </v-btn>
@@ -84,6 +95,7 @@ export default {
       dialog: false,
       isEdit: false,
       options: {},
+      page: 1,
       headers: [
         {
           text: 'No',
@@ -116,25 +128,57 @@ export default {
       items: ['Programming', 'Design', 'Vue', 'Vuetify'],
       search: '',
       loading: true,
+      hasNext: false,
+      initSearch: false,
     };
   },
+  computed: {
+    pageLength() {
+      if (this.hasNext) {
+        return 2;
+      }
+      if (this.page > 1) {
+        return 2;
+      }
+      return 1;
+    },
+    hasPrev() {
+      if (this.page > 1) {
+        return true;
+      }
+      return false;
+    },
+  },
   created() {
-    this.debounceSearch = this.$_.debounce(this.getProducts, 300);
+    this.debounceSearch = this.$_.debounce(this.getProducts, 500);
   },
   mounted() {
     this.getProducts();
   },
   watch: {
     search() {
+      if (this.search !== null && this.search !== '') this.initSearch = true;
       this.debounceSearch();
+    },
+    page() {
+      if (this.initSearch) {
+        return;
+      }
+      this.$set(this.options, 'page', this.page);
+      this.getProducts();
     },
   },
   methods: {
     getProducts() {
       this.loading = true;
-      let url = config.apiURL.concat(`/products`);
+      let url = config.apiURL.concat(`/products?limit=10&page=${this.page}`);
       if (this.search !== null && this.search !== '') {
-        url = url.concat(`?query=${this.search}&limit=10&page=1`);
+        if (this.page !== 1 && this.initSearch) this.page = 1;
+        this.initSearch = false;
+        this.$set(this.options, 'page', this.page);
+        url = config.apiURL
+          .concat(`/products`)
+          .concat(`?query=${this.search}&limit=10&page=${this.page}`);
       }
       this.$http
         .get(url)
@@ -143,6 +187,7 @@ export default {
           if (data.code === 200) {
             const { products } = data.data;
             this.products = products.map(item => this.getProductFromResponse(item));
+            this.hasNext = data.data.has_next;
           }
           this.loading = false;
         })
