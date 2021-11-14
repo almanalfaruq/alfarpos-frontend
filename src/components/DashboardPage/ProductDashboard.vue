@@ -210,6 +210,7 @@ export default {
       this.dialog = false;
       this.isEdit = false;
       this.selectedProduct = null;
+      this.getProducts();
     },
   },
 };

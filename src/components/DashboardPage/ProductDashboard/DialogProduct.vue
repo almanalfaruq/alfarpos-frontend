@@ -191,7 +191,10 @@
     <v-card-actions>
       <v-btn text @click="closeDialog"> Batal </v-btn>
       <v-spacer></v-spacer>
-      <v-btn v-if="isEdit" color="primary" @click="saveProduct"> Simpan </v-btn>
+      <template v-if="isEdit">
+        <v-btn color="error" @click="confirmDeleteProduct"> Hapus Produk </v-btn>
+        <v-btn color="primary" @click="saveProduct"> Simpan </v-btn>
+      </template>
       <v-btn v-else color="primary" @click="addProduct"> Tambah Produk </v-btn>
     </v-card-actions>
   </v-card>
@@ -541,6 +544,52 @@ export default {
           console.log(data);
           if (data.code === 200) {
             this.$swal('Produk berhasil diubah!', 'Oke!', 'success');
+            this.closeDialog();
+          }
+        })
+        .catch(err => {
+          console.log(err.response);
+          const { data } = err.response;
+          this.$swal({
+            icon: 'error',
+            title: 'Oops...',
+            text: data.message,
+          });
+        });
+    },
+    confirmDeleteProduct() {
+      const cloneData = this.$_.cloneDeep(this.$data);
+      const parsedProduct = this.parseToProductJSONRequest(cloneData);
+      this.$swal({
+        title: 'Anda yakin menghapus produk ini?',
+        text: `Hapus ${parsedProduct.name} dari daftar produk`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus saja!',
+        cancelButtonText: 'Batal',
+      }).then(result => {
+        if (result.isConfirmed) {
+          this.deleteProduct();
+        }
+      });
+    },
+    deleteProduct() {
+      const cloneData = this.$_.cloneDeep(this.$data);
+      const parsedProduct = this.parseToProductJSONRequest(cloneData);
+      const url = config.apiURL.concat(`/products`);
+      const axiosConfig = {
+        headers: { Authorization: `Bearer ${this.$store.getters.token}` },
+      };
+      const req = this.$http.delete(url.concat(`/${parsedProduct.id}`), axiosConfig);
+      req
+        .then(resp => {
+          const { data } = resp;
+          console.log(data);
+          if (data.code === 200) {
+            this.$swal('Produk berhasil dihapus!', 'Oke!', 'success');
+            this.closeDialog();
           }
         })
         .catch(err => {

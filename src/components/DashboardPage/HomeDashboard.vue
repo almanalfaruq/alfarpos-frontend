@@ -27,7 +27,22 @@
     <v-container>
       <v-row>
         <v-col v-for="item in items" :key="item.title">
-          <v-card class="mx-auto" width="320" max-width="340">
+          <v-card
+            v-if="item.action"
+            @click.stop="openDialogTransaction(item.action)"
+            class="mx-auto"
+            width="320"
+            max-width="340"
+          >
+            <v-card-text>
+              <div>{{ item.title }}</div>
+              <p class="display-1 text--primary">{{ item.value }}</p>
+              <div class="text--secondary" v-if="item.description">
+                {{ item.description }}
+              </div>
+            </v-card-text>
+          </v-card>
+          <v-card v-else class="mx-auto" width="320" max-width="340">
             <v-card-text>
               <div>{{ item.title }}</div>
               <p class="display-1 text--primary">{{ item.value }}</p>
@@ -39,18 +54,26 @@
         </v-col>
       </v-row>
     </v-container>
+    <v-dialog scrollable v-model="dialogTransaction" max-width="600">
+      <dialog-transaction @close-dialog="closeDialog" :type="type" :date="selectedDate" />
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import config from '@/config';
 
+import DialogTransaction from './HomeDashboard/DialogTransaction.vue';
+
 const moment = require('moment');
 
 export default {
   name: 'HomeDashboard',
+  components: { DialogTransaction },
   data() {
     return {
+      dialogTransaction: false,
+      type: 0,
       items: [
         { title: 'Keuntungan Kotor', value: 'Rp 0,00' },
         {
@@ -61,8 +84,8 @@ export default {
         },
         { title: 'Jumlah Transaksi', value: '0 transaksi' },
         { title: 'Rata-rata penjualan per transaksi', value: 'Rp 0,00' },
-        { title: 'Uang Masuk', value: 'Rp 0,00' },
-        { title: 'Uang Keluar', value: 'Rp 0,00' },
+        { title: 'Uang Masuk', value: 'Rp 0,00', action: 'money-in' },
+        { title: 'Uang Keluar', value: 'Rp 0,00', action: 'money-out' },
       ],
       selectedDate: null,
       dateMenu: false,
@@ -130,6 +153,21 @@ export default {
     onSelectDate() {
       this.dateMenu = false;
       this.getShopStats();
+    },
+    openDialogTransaction(action) {
+      switch (action) {
+        case 'money-in':
+          this.type = 1;
+          break;
+        default:
+          this.type = -1;
+          break;
+      }
+      this.dialogTransaction = true;
+    },
+    closeDialog() {
+      this.type = 0;
+      this.dialogTransaction = false;
     },
   },
 };

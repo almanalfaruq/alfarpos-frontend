@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 export default {
   created() {
     this.transferSessionStorage();
@@ -32,6 +34,9 @@ export default {
         maximumFractionDigits: 2, // (causes 2500.99 to be printed as $2,501)
       });
       return formatter.format(price);
+    },
+    formatDateFromResponse(date) {
+      return moment(date, 'YYYY-MM-DD[T]HH:mm:ss.SSSSSSZZ').format('DD/MM/YYYY HH:mm:ss');
     },
   },
 };
