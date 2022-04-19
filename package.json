@@ -10,7 +10,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.2",
     "@vue/cli": "^4.5.11",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "core-js": "^3.8.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
