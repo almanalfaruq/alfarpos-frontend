@@ -14,7 +14,7 @@
     "core-js": "^3.8.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
-    "moment": "^2.29.1",
+    "moment": "^2.29.4",
     "sweetalert2": "^10.15.5",
     "v-hotkey": "^0.8.0",
     "vue": "^2.6.12",
