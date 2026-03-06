@@ -1,28 +1,23 @@
-import Vue from 'vue';
-import Axios from 'axios';
-import global from '@/mixins/global';
-import VueSweetalert2 from 'vue-sweetalert2';
-import App from './App.vue';
-import router from './router';
-import store from './store';
-import vuetify from './plugins/vuetify';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+import vuetify from './plugins/vuetify'
+import VueSweetalert2 from 'vue-sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
+import Axios from 'axios'
+import _ from 'lodash'
+import globalMixin from '@/mixins/global'
 
-import 'sweetalert2/src/sweetalert2.scss';
+const app = createApp(App)
 
-Vue.config.productionTip = false;
-Vue.config.keyCodes.f2 = 113;
-Vue.config.keyCodes.f3 = 114;
-Vue.config.keyCodes.f7 = 118;
-Vue.config.keyCodes.f8 = 119;
-Vue.prototype.$http = Axios;
-Vue.prototype.$_ = require('lodash');
+app.config.globalProperties.$http = Axios
+app.config.globalProperties.$_ = _
 
-Vue.mixin(global);
-Vue.use(VueSweetalert2);
+app.mixin(globalMixin)
+app.use(router)
+app.use(store)
+app.use(vuetify)
+app.use(VueSweetalert2)
 
-new Vue({
-  router,
-  store,
-  vuetify,
-  render: h => h(App),
-}).$mount('#app');
+app.mount('#app')

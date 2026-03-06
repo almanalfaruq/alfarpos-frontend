@@ -20,7 +20,7 @@
           <v-combobox
             v-model="selectedCategory"
             :items="categories"
-            item-text="name"
+            item-title="name"
             item-value="id"
             label="Kategori"
             clearable
@@ -34,7 +34,7 @@
           <v-combobox
             v-model="selectedUnit"
             :items="units"
-            item-text="code"
+            item-title="code"
             item-value="id"
             label="Satuan"
             clearable
@@ -72,8 +72,8 @@
         <v-divider vertical></v-divider>
         <v-col md="8">
           <v-tooltip right>
-            <template v-slot:activator="{ on, attrs }">
-              <span v-bind="attrs" v-on="on">Harga Spesial</span>
+            <template v-slot:activator="{ props }">
+              <span v-bind="props">Harga Spesial</span>
             </template>
             <span>Harga spesial untuk pembelian per-paket/jumlah minimal</span>
           </v-tooltip>
@@ -81,7 +81,7 @@
             <v-col sm="4">
               <v-select
                 :items="specialPriceOptions"
-                item-text="label"
+                item-title="label"
                 item-value="value"
                 label="Pilih tipe harga"
                 v-model="specialPrices[index].priceOption"
@@ -427,7 +427,7 @@ export default {
         });
     },
     addNewSpecialPrice(index, productPrice) {
-      this.$set(this.specialPrices, index, productPrice);
+      this.specialPrices[index] = productPrice;
       this.specialPrices.push({
         priceOption: null,
         sellPrice: null,

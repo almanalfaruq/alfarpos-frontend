@@ -61,7 +61,7 @@
 import HeaderNav from '@/components/CashierPage/HeaderNav.vue';
 import TableCashier from '@/components/CashierPage/TableCashier.vue';
 
-const moment = require('moment');
+import moment from 'moment';
 
 export default {
   name: 'CashierPage',
@@ -146,7 +146,7 @@ export default {
 <style lang="scss" scoped>
 .background {
   height: 100vh;
-  background-image: url('~@/assets/cashier-background.png');
+  background-image: url('@/assets/cashier-background.png');
   background-color: #fff;
   background-size: cover;
 }
@@ -191,7 +191,7 @@ export default {
   font-family: 'Muli', sans-serif !important;
 }
 
-.background::v-deep p {
+.background :deep(p) {
   margin-bottom: 0px;
 }
 
@@ -200,7 +200,7 @@ export default {
   color: #fff;
 }
 
-.background::v-deep .v-btn {
+.background :deep(.v-btn) {
   color: #fff;
 }
 .method {

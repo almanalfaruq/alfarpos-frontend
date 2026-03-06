@@ -1,17 +1,13 @@
-import Vue from 'vue';
-import Router from 'vue-router';
-import store from './store';
-import CashierPage from './views/CashierPage.vue';
-import LoginPage from './views/LoginPage.vue';
-import DashboardPage from './views/DashboardPage.vue';
+import { createRouter, createWebHistory } from 'vue-router';
 import HomeDashboard from './components/DashboardPage/HomeDashboard.vue';
 import ProductDashboard from './components/DashboardPage/ProductDashboard.vue';
+import store from './store';
+import CashierPage from './views/CashierPage.vue';
+import DashboardPage from './views/DashboardPage.vue';
+import LoginPage from './views/LoginPage.vue';
 
-Vue.use(Router);
-
-const router = new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -19,12 +15,6 @@ const router = new Router({
       component: LoginPage,
       meta: {
         requiresAuth: false,
-      },
-    },
-    {
-      path: '/logout',
-      meta: {
-        requiresAuth: true,
       },
     },
     {
@@ -63,13 +53,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // nav guard for auth page
   if (to.matched.some(route => route.meta.requiresAuth)) {
-    if (to.matched.some(route => route.path === '/logout')) {
-      sessionStorage.removeItem('token');
-      store.commit('setToken', null);
-      router.push({
-        path: '/',
-      });
-    } else if (sessionStorage.getItem('token') === null) {
+    if (sessionStorage.getItem('token') === null) {
       next({
         path: '/',
         params: { nextUrl: to.fullPath },

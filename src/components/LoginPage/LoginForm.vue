@@ -14,7 +14,7 @@
     <v-text-field
       v-model="password"
       ref="inputPassword"
-      :append-icon="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+      :append-inner-icon="showPassword ? 'fa:fa-eye' : 'fa:fa-eye-slash'"
       :rules="[rules.required, rules.min]"
       :type="showPassword ? 'text' : 'password'"
       :error="isLoginError"

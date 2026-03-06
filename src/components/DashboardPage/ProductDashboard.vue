@@ -31,7 +31,7 @@
         <v-data-table
           :headers="headers"
           :items="products"
-          :options.sync="options"
+          v-model:options="options"
           fixed-header
           :loading="loading"
           loading-text="Memuat data... Mohon menunggu"
@@ -94,33 +94,38 @@ export default {
     return {
       dialog: false,
       isEdit: false,
-      options: {},
+      options: {
+        page: 1,
+        itemsPerPage: 10,
+      },
       page: 1,
       headers: [
         {
-          text: 'No',
+          title: 'No',
           align: 'left',
           sortable: false,
           value: 'index',
           width: '50px',
         },
         {
-          text: 'Kode Barang',
+          title: 'Barcode',
           align: 'left',
           sortable: false,
-          value: 'itemCode',
+          value: 'code',
           width: '150px',
         },
         {
-          text: 'Nama Produk',
+          title: 'Nama Produk',
           sortable: false,
           align: 'left',
-          value: 'productName',
+          value: 'name',
         },
-        { text: 'Harga Jual', sortable: false, align: 'center', value: 'price' },
-        { text: 'Satuan', sortable: false, align: 'center', value: 'unit' },
-        { text: 'Stok Toko', sortable: false, align: 'center', value: 'stock' },
-        { text: 'Aksi', sortable: false, align: 'center', value: 'action', width: '80px' },
+        { title: 'Kategori', sortable: false, align: 'center', value: 'category.name' },
+        { title: 'Stok', sortable: false, align: 'center', value: 'quantity' },
+        { title: 'Unit', sortable: false, align: 'center', value: 'unit.name' },
+        { title: 'Harga Beli', sortable: false, align: 'center', value: 'buyPrice' },
+        { title: 'Harga Jual', sortable: false, align: 'center', value: 'sellPrice' },
+        { title: 'Edit', sortable: false, align: 'center', value: 'action', width: '80px' },
       ],
       products: [],
       selectedProduct: null,
@@ -164,7 +169,7 @@ export default {
       if (this.initSearch) {
         return;
       }
-      this.$set(this.options, 'page', this.page);
+      this.options.page = this.page;
       this.getProducts();
     },
   },
@@ -175,7 +180,7 @@ export default {
       if (this.search !== null && this.search !== '') {
         if (this.page !== 1 && this.initSearch) this.page = 1;
         this.initSearch = false;
-        this.$set(this.options, 'page', this.page);
+        this.options.page = this.page;
         url = config.apiURL
           .concat(`/products`)
           .concat(`?query=${this.search}&limit=10&page=${this.page}`);

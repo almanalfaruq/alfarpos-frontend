@@ -1,25 +1,21 @@
 <template>
-  <v-card flat class="side-menu">
-    <v-navigation-drawer permanent expand-on-hover color="#3C7E8C">
-      <v-list nav dense>
-        <v-list-item
-          v-for="item in itemsWithRoute"
-          :key="item.title"
-          @click="gotoRoute(item.route)"
-          link
-          class="menu-icon"
-        >
-          <v-list-item-icon>
-            <v-icon color="white">{{ item.icon }}</v-icon>
-          </v-list-item-icon>
+  <v-navigation-drawer permanent expand-on-hover color="#3C7E8C" rail>
+    <v-list nav density="compact">
+      <v-list-item
+        v-for="item in itemsWithRoute"
+        :key="item.title"
+        @click="gotoRoute(item.route)"
+        link
+        class="menu-icon"
+      >
+        <template v-slot:prepend>
+          <v-icon color="white">{{ item.icon }}</v-icon>
+        </template>
 
-          <v-list-item-content>
-            <v-list-item-title class="text-white">{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-  </v-card>
+        <v-list-item-title class="text-white">{{ item.title }}</v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-navigation-drawer>
 </template>
 
 <script>
@@ -29,10 +25,10 @@ export default {
       drawer: true,
       items: [
         { title: 'Dashboard', icon: 'mdi-home-city', route: '/dashboard', mustAdmin: true },
-        { title: 'Laporan', icon: 'fa-book', mustAdmin: true },
-        { title: 'Produk', icon: 'fa-truck-moving', route: '/dashboard/product' },
-        { title: 'Stok', icon: 'fa-warehouse' },
-        { title: 'Admin Panel', icon: 'fa-users-cog', mustAdmin: true },
+        { title: 'Laporan', icon: 'fa:fa-book', mustAdmin: true },
+        { title: 'Produk', icon: 'fa:fa-truck-moving', route: '/dashboard/product' },
+        { title: 'Stok', icon: 'fa:fa-warehouse' },
+        { title: 'Admin Panel', icon: 'fa:fa-users-cog', mustAdmin: true },
       ],
       mini: true,
     };

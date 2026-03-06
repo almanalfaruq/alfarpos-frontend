@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <v-layout>
     <header-dashboard />
-    <div class="sidebar-content">
-      <side-bar />
+    <side-bar />
+    <v-main>
       <router-view></router-view>
-    </div>
-  </div>
+    </v-main>
+  </v-layout>
 </template>
 
 <script>
@@ -22,10 +22,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.sidebar-content {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  background: #ffffff;
-}
+/* No custom layout styles needed with Vuetify 3 Layout System */
 </style>

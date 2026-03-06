@@ -1,11 +1,7 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { jwtDecode } from 'jwt-decode';
+import { createStore } from 'vuex';
 
-const jwt = require('jsonwebtoken');
-
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     token: sessionStorage.getItem('token'),
   },
@@ -13,7 +9,11 @@ export default new Vuex.Store({
     token: state => state.token,
     userLoggedIn: state => {
       if (state.token === null) return null;
-      return jwt.decode(state.token);
+      try {
+        return jwtDecode(state.token);
+      } catch (error) {
+        return null;
+      }
     },
   },
   mutations: {

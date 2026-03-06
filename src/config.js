@@ -1,3 +1,3 @@
-module.exports = {
-  apiURL: 'http://192.168.1.69:8000/api',
+export default {
+  apiURL: 'http://172.21.48.1:8000/api',
 };

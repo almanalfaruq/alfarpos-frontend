@@ -6,22 +6,24 @@
       <div v-if="monies.length == 0" class="empty-div">
         <h3>Data Kosong</h3>
       </div>
-      <v-list-item v-for="item in monies" :key="item.createdAt" three-line>
-        <v-list-item-content>
-          <v-list-item-title>{{ item.note }}</v-list-item-title>
-          <v-list-item-subtitle>
-            {{ item.amount }}
-          </v-list-item-subtitle>
-          <v-list-item-subtitle> {{ item.createdAt }} </v-list-item-subtitle>
-          <v-divider inset></v-divider>
-        </v-list-item-content>
-      </v-list-item>
+      <v-list v-else lines="three">
+        <template v-for="(item, index) in monies" :key="item.createdAt">
+          <v-list-item>
+            <v-list-item-title>{{ item.note }}</v-list-item-title>
+            <v-list-item-subtitle>
+              {{ item.amount }}
+            </v-list-item-subtitle>
+            <v-list-item-subtitle> {{ item.createdAt }} </v-list-item-subtitle>
+          </v-list-item>
+          <v-divider v-if="index < monies.length - 1" inset></v-divider>
+        </template>
+      </v-list>
     </v-card-text>
     <v-divider></v-divider>
     <v-card-actions>
-      <v-btn color="blue darken-1" text @click="closeDialog"> Tutup </v-btn>
+      <v-btn color="blue darken-1" variant="text" @click="closeDialog"> Tutup </v-btn>
       <v-spacer></v-spacer>
-      <v-btn color="blue darken-1" text @click="getMonies"> Refresh </v-btn>
+      <v-btn color="blue darken-1" variant="text" @click="getMonies"> Refresh </v-btn>
     </v-card-actions>
   </v-card>
 </template>

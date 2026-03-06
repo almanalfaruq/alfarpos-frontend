@@ -1,31 +1,28 @@
 <template>
-  <div>
-    <v-toolbar flat class="header-cashier" color="#3C7E8C">
-      <div class="flex-grow-1"></div>
-      <v-toolbar-title class="text-cashier">
-        <h4>{{ name }}</h4>
-        <p class="address">{{ address }}</p>
-      </v-toolbar-title>
+  <v-app-bar flat class="header-cashier" color="#3C7E8C">
+    <div class="flex-grow-1"></div>
+    <v-toolbar-title class="text-cashier">
+      <h4>{{ name }}</h4>
+      <p class="address">{{ address }}</p>
+    </v-toolbar-title>
 
-      <div class="flex-grow-1"></div>
+    <div class="flex-grow-1"></div>
 
-      <v-menu offset-y>
-        <template v-slot:activator="{ on }">
-          <v-btn icon>
-            <v-avatar v-on="on" class="avatar-icon">
-              <img src="~@/assets/avatar.png" alt="avatar" />
-            </v-avatar>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item v-for="item in items" @click="gotoRoute(item.route)" :key="item.title">
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <span class="name-user">{{ user.full_name }}</span>
-    </v-toolbar>
-  </div>
+    <v-menu offset-y>
+      <template v-slot:activator="{ props }">
+        <v-btn icon v-bind="props">
+          <v-avatar class="avatar-icon">
+            <img src="@/assets/avatar.png" alt="avatar" />
+          </v-avatar>
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-item v-for="item in items" @click="gotoRoute(item.route)" :key="item.title" :title="item.title">
+        </v-list-item>
+      </v-list>
+    </v-menu>
+    <span class="name-user">{{ user.full_name }}</span>
+  </v-app-bar>
 </template>
 
 <script>
@@ -46,6 +43,12 @@ export default {
   },
   methods: {
     gotoRoute(route) {
+      if (route === '/logout') {
+        sessionStorage.removeItem('token');
+        this.$store.commit('setToken', null);
+        this.$router.push('/');
+        return;
+      }
       if (route === null || route === '') return;
       this.$router.push(route);
     },

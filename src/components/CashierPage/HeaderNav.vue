@@ -10,16 +10,15 @@
       <div class="flex-grow-1"></div>
 
       <v-menu offset-y>
-        <template v-if="$vuetify.breakpoint.smAndUp" v-slot:activator="{ on }">
-          <v-btn icon>
-            <v-avatar v-on="on" class="avatar-icon">
-              <img src="~@/assets/avatar.png" alt="Fiha" />
+        <template v-if="$vuetify.display.smAndUp" v-slot:activator="{ props }">
+          <v-btn icon v-bind="props">
+            <v-avatar class="avatar-icon">
+              <img src="@/assets/avatar.png" alt="Fiha" />
             </v-avatar>
           </v-btn>
         </template>
         <v-list>
-          <v-list-item v-for="(item, index) in items" :key="index">
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          <v-list-item v-for="(item, index) in items" :key="index" :title="item.title" @click="gotoRoute(item.route)" link>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -36,8 +35,24 @@ export default {
       user: 'Fiha Febiala',
       address:
         'Alamat : Depan pasar, Desa RT.7/RW.1, Dusun I, Ketaon, Kec.Banyudono, Kabupaten Boyolali, Jawa Tengah 57373',
-      items: [{ title: 'Dashboard Keuangan' }, { title: 'Keluar' }],
+      items: [
+        { title: 'Dashboard Keuangan', route: '/dashboard' },
+        { title: 'Keluar', route: '/logout' },
+      ],
     };
+  },
+  methods: {
+    gotoRoute(route) {
+      if (route === '/logout') {
+        sessionStorage.removeItem('token');
+        this.$store.commit('setToken', null);
+        this.$router.push('/');
+        return;
+      }
+      if (route) {
+        this.$router.push(route);
+      }
+    },
   },
 };
 </script>

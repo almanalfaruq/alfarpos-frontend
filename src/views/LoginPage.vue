@@ -18,7 +18,7 @@ export default {
 <style lang="scss" scoped>
 .background {
   height: 100vh;
-  background-image: url('~@/assets/login-background.png');
+  background-image: url('@/assets/login-background.png');
   background-size: cover;
 }
 </style>

@@ -14,29 +14,29 @@
             v-model="selected"
             :items="products"
             :loading="isLoading"
-            :search-input.sync="search"
+            v-model:search-input="search"
             return-object
             no-data-text="Produk tidak ditemukan"
             clearable
             hide-details
             hide-selected
-            item-text="name"
+            item-title="name"
             item-value="id"
             label="Cari produk..."
             filled
           >
-            <template v-slot:item="{ item }">
-              <v-list-item-avatar
-                color="indigo"
-                class="headline font-weight-light white--text justify-center"
-              >
-                {{ item.name.charAt(0) }}
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title v-text="item.name"></v-list-item-title>
-                <v-list-item-subtitle v-text="item.unitAndPrice"></v-list-item-subtitle>
-              </v-list-item-content>
-            </template>
+          <template v-slot:item="{ props, item }">
+            <v-list-item v-bind="props" :title="item.raw.name" :subtitle="item.raw.unitAndPrice">
+              <template v-slot:prepend>
+                <v-avatar
+                  color="indigo"
+                  class="headline font-weight-light text-white justify-center"
+                >
+                  {{ item.raw.name.charAt(0) }}
+                </v-avatar>
+              </template>
+            </v-list-item>
+          </template>
           </v-autocomplete>
         </v-col>
       </v-row>

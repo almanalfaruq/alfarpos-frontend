@@ -2,48 +2,49 @@
   <v-data-table
     :headers="headers"
     :items="products"
-    sort-by="index"
+    :sort-by="[{ key: 'index', order: 'asc' }]"
     :items-per-page="-1"
     class="table-item"
-    hide-default-footer
     height="60vh"
     fixed-header
     ref="tableCashier"
   >
-    <template v-slot:item="props">
+    <template v-slot:bottom></template>
+    <template v-slot:item="{ item, index }">
       <tr
         tabindex="0"
         @keydown.up.prevent="moveUp"
         @keydown.down.prevent="moveDown"
         @keydown.esc.prevent="focusInput"
-        @keydown.f8.prevent="openEditAmountDialog"
-        @keydown.delete="deleteItem($event, props.item)"
+        @keydown.f8.prevent="openEditAmountDialog(index)"
+        @keydown.delete="deleteItem($event, item.raw)"
         @keydown.+.prevent="openFinishDialog"
+        :ref="(el) => setRowRef(el, index)"
       >
-        <td class="text-left">{{ props.index + 1 }}</td>
+        <td class="text-left">{{ index + 1 }}</td>
         <td class="text-left">
           <v-text-field
-            v-if="products.indexOf(props.item) === products.length - 1 && !isSearchActivated"
+            v-if="index === products.length - 1 && !isSearchActivated"
             v-model="productCode"
             autofocus
             :error="isInputError"
             :error-messages="inputError"
             placeholder="Kode Barcode"
-            @keydown.enter="addProductByCode(props.index)"
+            @keydown.enter="addProductByCode(index)"
             @keydown.f2.prevent="activateSearchByCode"
             @keydown.f3.prevent="activateSearchByName"
             ref="inputProduct"
           ></v-text-field>
           <template
-            v-else-if="products.indexOf(props.item) === products.length - 1 && isSearchActivated"
+            v-else-if="index === products.length - 1 && isSearchActivated"
           >
             <v-autocomplete
               v-if="isSearchByCode"
-              v-model="props.item.itemCode"
+              v-model="item.raw.itemCode"
               :items="itemsForSearch"
-              :search-input.sync="search"
+              v-model:search-input="search"
               hide-no-data
-              item-text="itemCode"
+              item-title="itemCode"
               item-value="itemCode"
               single-line
               placeholder="Cari Kode Barang"
@@ -51,19 +52,19 @@
               :error="isInputError"
               :error-messages="inputError"
               autofocus
-              @click="addProductBySearch($event, 'code', props.index)"
-              @change="addProductBySearch($event, 'code', props.index)"
+              @click="addProductBySearch($event, 'code', index)"
+              @update:model-value="(val) => addProductBySearch(val, 'code', index)"
               @keydown.esc.prevent="turnOffSearch"
               @keydown.f2.prevent="activateSearchByCode"
               @keydown.f3.prevent="activateSearchByName"
             ></v-autocomplete>
             <v-autocomplete
               v-else
-              v-model="props.item.productName"
+              v-model="item.raw.productName"
               :items="itemsForSearch"
-              :search-input.sync="search"
+              v-model:search-input="search"
               hide-no-data
-              item-text="productName"
+              item-title="productName"
               item-value="productName"
               single-line
               placeholder="Cari Nama Barang"
@@ -71,35 +72,36 @@
               :error="isInputError"
               :error-messages="inputError"
               autofocus
-              @click="addProductBySearch($event, 'name', props.index)"
-              @change="addProductBySearch($event, 'name', props.index)"
+              @click="addProductBySearch($event, 'name', index)"
+              @update:model-value="(val) => addProductBySearch(val, 'name', index)"
               @keydown.esc.prevent="turnOffSearch"
               @keydown.f2.prevent="activateSearchByCode"
               @keydown.f3.prevent="activateSearchByName"
             ></v-autocomplete>
           </template>
-          <template v-else>{{ props.item.itemCode }}</template>
+          <template v-else>{{ item.raw.itemCode }}</template>
         </td>
-        <td class="text-left">{{ props.item.productName }}</td>
-        <td class="text-center">{{ props.item.price }}</td>
-        <td class="text-center">
-          <v-edit-dialog
-            :return-value.sync="props.item.amount"
-            @save="saveAmount(props.item)"
-            :id="`edit-dialog-${props.index}`"
-          >
-            <div>{{ props.item.amount }}</div>
-            <template v-slot:input>
-              <v-text-field v-model="props.item.amount" label="Edit" single-line autofocus></v-text-field>
-            </template>
-          </v-edit-dialog>
+        <td class="text-left">{{ item.raw.productName }}</td>
+        <td class="text-center">{{ item.raw.price }}</td>
+        <td class="text-center" @click="editingIndex = index">
+          <v-text-field
+            v-if="editingIndex === index"
+            v-model="item.raw.amount"
+            autofocus
+            single-line
+            hide-details
+            density="compact"
+            @blur="editingIndex = -1"
+            @keydown.enter="saveAmount(item.raw, index); editingIndex = -1"
+          ></v-text-field>
+          <span v-else>{{ item.raw.amount }}</span>
         </td>
-        <td class="text-center">{{ props.item.total }}</td>
+        <td class="text-center">{{ item.raw.total }}</td>
         <td class="text-center">
           <v-icon
-            v-if="props.index != products.length - 1"
-            small
-            @click="deleteItem($event, props.item)"
+            v-if="index != products.length - 1"
+            size="small"
+            @click="deleteItem($event, item.raw)"
           >fa-trash</v-icon>
         </td>
       </tr>
@@ -122,31 +124,33 @@ export default {
       inputError: null,
       focusedIndex: -1,
       productCode: '',
+      editingIndex: -1,
+      rowRefs: [],
       headers: [
         {
-          text: 'No',
+          title: 'No',
           align: 'left',
           sortable: false,
-          value: 'index',
+          key: 'index',
           width: '50px',
         },
         {
-          text: 'Kode Barang',
+          title: 'Kode Barang',
           align: 'left',
           sortable: false,
-          value: 'itemCode',
+          key: 'itemCode',
           width: '150px',
         },
         {
-          text: 'Nama Produk',
+          title: 'Nama Produk',
           sortable: false,
           align: 'left',
-          value: 'productName',
+          key: 'productName',
         },
-        { text: 'Harga', sortable: false, align: 'center', value: 'price' },
-        { text: 'Jumlah', sortable: false, align: 'center', value: 'amount' },
-        { text: 'Total', sortable: false, align: 'center', value: 'total' },
-        { text: 'Hapus', sortable: false, align: 'center', value: 'action', width: '80px' },
+        { title: 'Harga', sortable: false, align: 'center', key: 'price' },
+        { title: 'Jumlah', sortable: false, align: 'center', key: 'amount' },
+        { title: 'Total', sortable: false, align: 'center', key: 'total' },
+        { title: 'Hapus', sortable: false, align: 'center', key: 'action', width: '80px' },
       ],
       pagination: {
         itemsPerPage: -1,
@@ -165,6 +169,9 @@ export default {
   },
   created() {
     this.debounceSearch = this.$_.debounce(this.searchProduct, 300);
+  },
+  beforeUpdate() {
+    this.rowRefs = [];
   },
   computed: {
     total() {
@@ -201,6 +208,9 @@ export default {
     },
   },
   methods: {
+    setRowRef(el, index) {
+      if (el) this.rowRefs[index] = el;
+    },
     deleteItem(event, item) {
       /* eslint-disable */
       if (
@@ -237,6 +247,7 @@ export default {
               price: data.data.sell_price,
               amount,
               total: amount * data.data.sell_price,
+              sell_price: data.data.sell_price, // Needed for saveAmount calculation
             };
             this.addProduct(index, product, amount);
           } else {
@@ -271,19 +282,19 @@ export default {
     },
     addExistingProduct(index, itemCode, amount) {
       const product = this.products.find(item => item.itemCode === itemCode);
-      this.$set(this.products[index], 'amount', product.amount + amount);
-      this.$set(this.products[index], 'total', product.price * product.amount);
-      this.$set(this.products, this.products.length - 1, {
+      this.products[index].amount = product.amount + amount;
+      this.products[index].total = product.price * this.products[index].amount;
+      this.products[this.products.length - 1] = {
         itemCode: null,
         productName: null,
         price: null,
         amount: null,
         total: null,
-      });
+      };
       this.clearAllInput();
     },
     addNewProduct(index, product) {
-      this.$set(this.products, index, product);
+      this.products[index] = product;
       this.products.push({
         itemCode: null,
         productName: null,
@@ -311,15 +322,13 @@ export default {
       this.itemsForSearch = [];
       this.turnOffSearch();
     },
-    saveAmount(item) {
-      const index = this.products.indexOf(item);
-      this.$set(this.products, index, {
-        itemCode: this.products[index].itemCode,
-        productName: this.products[index].productName,
-        price: this.products[index].price,
-        amount: this.products[index].amount,
-        total: this.products[index].sell_price * this.products[index].amount,
-      });
+    saveAmount(item, index) {
+      // Ensure index is valid, although item is passed
+      const idx = index !== undefined ? index : this.products.indexOf(item);
+      if (idx === -1) return;
+      
+      this.products[idx].amount = parseInt(item.amount); // Ensure it's a number
+      this.products[idx].total = this.products[idx].price * this.products[idx].amount;
     },
     clearAllProduct() {
       this.productCode = '';
@@ -359,6 +368,7 @@ export default {
               price: item.sell_price,
               amount: 1,
               total: item.sell_price,
+              sell_price: item.sell_price, // Preserve this
             }));
           } else {
             this.isInputError = true;
@@ -378,10 +388,8 @@ export default {
     },
     focusRow() {
       if (this.focusedIndex === this.products.length - 1) return;
-      const selectedRow = this.$refs.tableCashier.$el.children[0].children[0].children[2].rows[
-        this.focusedIndex
-      ];
-      selectedRow.focus();
+      const selectedRow = this.rowRefs[this.focusedIndex];
+      if (selectedRow) selectedRow.focus();
       this.$emit('update-is-focus-on-input', false);
     },
     moveUp() {
@@ -402,12 +410,14 @@ export default {
     },
     focusInput() {
       this.$emit('update-is-focus-on-input', true);
-      this.$refs.inputProduct.focus();
+      if (this.$refs.inputProduct) {
+        this.$refs.inputProduct.focus();
+      }
       this.focusedIndex = this.products.length - 1;
     },
-    openEditAmountDialog() {
+    openEditAmountDialog(index) {
       if (this.focusedIndex === this.products.length - 1) return;
-      document.getElementById(`edit-dialog-${this.focusedIndex}`).previousElementSibling.click();
+      this.editingIndex = index;
     },
     openFinishDialog() {
       this.$emit('open-finish-dialog');
@@ -439,7 +449,7 @@ export default {
   // overflow-y: auto;
 }
 
-.table-item::v-deep th[role='columnheader'] {
+.table-item :deep(th[role='columnheader']) {
   font-size: 12px;
   background-color: #dddddd !important;
   &:first-of-type {
@@ -450,7 +460,7 @@ export default {
   }
 }
 
-.table-item::v-deep td,
+.table-item :deep(td),
 div {
   font-size: 12px;
 }
